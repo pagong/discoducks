@@ -23,13 +23,13 @@
   This example code is in the public domain.
  */
  
-prog_char eff01[] PROGMEM = "az0 F2E2/ Df2Ce2Bd2 Yc2Xb2Wy2Vx2Uw2 3 Wu2Xv2Yw2 Bx2Cy2Db2Ec2Fd2 3";	// Knight Rider
-prog_char eff02[] PROGMEM = "az0/ Fw2Ev2Du2Cf2Be2 Yd2Xc2Wb2Vy2Ux2";				// rotate: left to right
+prog_char eff01[] PROGMEM = "F2E2/ Df2Ce2Bd2 Yc2Xb2Wy2Vx2Uw2 3 Wu2Xv2Yw2 Bx2Cy2Db2Ec2Fd2 3";	// Knight Rider
+prog_char eff02[] PROGMEM = "Fw2Ev2Du2Cf2Be2 Yd2Xc2Wb2Vy2Ux2";					// rotate: left to right
 prog_char eff03[] PROGMEM = "FeDcByXwVu3 fEdCbYxWvU3";						// alternate blinking
 prog_char eff04[] PROGMEM = "AZ0/ byFU2 cxBY2 dwCX2 evDW2 fuEV2";				// rotate each side
 prog_char eff05[] PROGMEM = "Az3 Za3";								// blink left / blink right
-prog_char eff06[] PROGMEM = "az0/ BY2CX2DW2EV2FU2 3*0*0*0*0*0*5 by2cx2dw2ev2fu2 3*0*0*0*0*0*5";	// from center to outside + blink
-prog_char eff07[] PROGMEM = "az0/ F1E1D1C1B1 6 Y1X1W1V1U1 6 f1e1d1c1b1 6 y1x1w1v1u1 6";		// roll in, roll out (left to right)
+prog_char eff06[] PROGMEM = "BY2CX2DW2EV2FU2 3*0*0*0*0*0*5 by2cx2dw2ev2fu2 3*0*0*0*0*0*5";	// from center to outside + blink
+prog_char eff07[] PROGMEM = "F1E1D1C1B1 6 Y1X1W1V1U1 6 f1e1d1c1b1 6 y1x1w1v1u1 6";		// roll in, roll out (left to right)
 prog_char eff08[] PROGMEM = "AZ2az2 AZ2az2 AZ2az2 4 AZ4az2 AZ4az2 AZ4az2 4 AZ2az2 AZ2az2 AZ2az2 99";	// morse code: SOS
 
 int num = 8;
@@ -48,6 +48,9 @@ char* Effects[] PROGMEM = {
 #define r3   7		// digital 7
 #define r4   5		// digital 5
 #define r5   6		// digital 6
+
+// LED state variables
+int L, R;
 
 /******************************************************************/
 
@@ -83,34 +86,13 @@ int check_keys(int pin) {
 
 /******************************************************************/
 
-// state variables
-int L, R;
-
-// the setup routine runs once when you press reset:
-void setup() {                
-  // initialize all required IO pins as an output.
-  pinMode(l1, OUTPUT);     pinMode(l2, OUTPUT);     
-  pinMode(l3, OUTPUT);     pinMode(l4, OUTPUT);     
-  pinMode(l5, OUTPUT);     L = 0;
-  pinMode(r1, OUTPUT);     pinMode(r2, OUTPUT);     
-  pinMode(r3, OUTPUT);     pinMode(r4, OUTPUT);     
-  pinMode(r5, OUTPUT);     R = 0;
-  // initialize serial communication at 9600 bits per second:
-  Serial.begin(9600);
-}
-
 // turn the LEDs on/off (HIGH/LOW is the voltage level)
 void apply_state() {
-  digitalWrite(l1, (L &  1 ? HIGH : LOW));
-  digitalWrite(r1, (R &  1 ? HIGH : LOW));
-  digitalWrite(l2, (L &  2 ? HIGH : LOW));
-  digitalWrite(r2, (R &  2 ? HIGH : LOW));
-  digitalWrite(l3, (L &  4 ? HIGH : LOW));
-  digitalWrite(r3, (R &  4 ? HIGH : LOW));
-  digitalWrite(l4, (L &  8 ? HIGH : LOW));
-  digitalWrite(r4, (R &  8 ? HIGH : LOW));
-  digitalWrite(l5, (L & 16 ? HIGH : LOW));
-  digitalWrite(r5, (R & 16 ? HIGH : LOW));
+  digitalWrite(l1, (L &  1 ? HIGH : LOW));	digitalWrite(r1, (R &  1 ? HIGH : LOW));
+  digitalWrite(l2, (L &  2 ? HIGH : LOW));	digitalWrite(r2, (R &  2 ? HIGH : LOW));
+  digitalWrite(l3, (L &  4 ? HIGH : LOW));	digitalWrite(r3, (R &  4 ? HIGH : LOW));
+  digitalWrite(l4, (L &  8 ? HIGH : LOW));	digitalWrite(r4, (R &  8 ? HIGH : LOW));
+  digitalWrite(l5, (L & 16 ? HIGH : LOW));	digitalWrite(r5, (R & 16 ? HIGH : LOW));
 }
 
 int eval_code(char code) {
@@ -179,13 +161,28 @@ int eval_code(char code) {
 
 // key press codes
 int prev = KS_Undef;
+// effect buffer
+char buffer[128];
 int pos = 0;
+
+// the setup routine runs once when 'reboot':
+void setup() {                
+  // initialize serial communication at 9600 bits per second:
+  Serial.begin(9600);
+  // initialize all required IO pins as an output.
+  pinMode(l1, OUTPUT);	pinMode(r1, OUTPUT);
+  pinMode(l2, OUTPUT);	pinMode(r2, OUTPUT);     
+  pinMode(l3, OUTPUT);	pinMode(r3, OUTPUT);
+  pinMode(l4, OUTPUT);	pinMode(r4, OUTPUT);     
+  pinMode(l5, OUTPUT);	pinMode(r5, OUTPUT); 
+
+  L = 0; R = 0;
+  apply_state();
+  strcpy_P(buffer, (char*)pgm_read_word(&(Effects[0])));
+}
 
 // the loop routine runs over and over again forever:
 void loop() {
-  // effect buffer
-  char buffer[128];
-
   // check potentiometer on analog pin A5
   check_poti(A5);
 
@@ -193,12 +190,13 @@ void loop() {
   int curr = check_keys(A4);
   if (curr != prev) {
     if (curr == KS_Red) {		// red key pressed
-      pos++;
-      if (pos == num) pos = 0;
+      L = 0; R = 0;
+      apply_state();
+      // use next effect string
+      if (++pos == num) pos = 0;
+      strcpy_P(buffer, (char*)pgm_read_word(&(Effects[pos])));
     }
     prev=curr;
-
-    strcpy_P(buffer, (char*)pgm_read_word(&(Effects[pos])));
   }
   
   int len = strlen(buffer);
