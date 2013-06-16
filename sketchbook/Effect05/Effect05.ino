@@ -24,16 +24,17 @@
  */
  
 prog_char eff01[] PROGMEM = "az0 F2E2/ Df2Ce2Bd2 Yc2Xb2Wy2Vx2Uw2 3 Wu2Xv2Yw2 Bx2Cy2Db2Ec2Fd2 3";	// Knight Rider
-prog_char eff02[] PROGMEM = "az0/ Fw2Ev2Du2Cf2Be2 Yd2Xc2Wb2Vy2Ux2";					// rotate: left to right
-prog_char eff03[] PROGMEM = "AZ0/ byFU2 cxBY2 dwCX2 evDW2 fuEV2";					// rotate each side
-prog_char eff04[] PROGMEM = "Az3 Za3";								// blink left / blink right
-prog_char eff05[] PROGMEM = "az0/ BY2CX2DW2EV2FU2 3*0*0*0*0*0*5 by2cx2dw2ev2fu2 3*0*0*0*0*0*5";	// from center to outside + blink
-prog_char eff06[] PROGMEM = "az0/ F1E1D1C1B1 6 Y1X1W1V1U1 6 f1e1d1c1b1 6 y1x1w1v1u1 6";		// roll in, roll out (left to right)
-prog_char eff07[] PROGMEM = "AZ2az2 AZ2az2 AZ2az2 4 AZ4az2 AZ4az2 AZ4az2 4 AZ2az2 AZ2az2 AZ2az2 99";	// morse code: SOS
+prog_char eff02[] PROGMEM = "az0/ Fw2Ev2Du2Cf2Be2 Yd2Xc2Wb2Vy2Ux2";				// rotate: left to right
+prog_char eff03[] PROGMEM = "FeDcByXwVu3 fEdCbYxWvU3";						// alternate blinking
+prog_char eff04[] PROGMEM = "AZ0/ byFU2 cxBY2 dwCX2 evDW2 fuEV2";				// rotate each side
+prog_char eff05[] PROGMEM = "Az3 Za3";								// blink left / blink right
+prog_char eff06[] PROGMEM = "az0/ BY2CX2DW2EV2FU2 3*0*0*0*0*0*5 by2cx2dw2ev2fu2 3*0*0*0*0*0*5";	// from center to outside + blink
+prog_char eff07[] PROGMEM = "az0/ F1E1D1C1B1 6 Y1X1W1V1U1 6 f1e1d1c1b1 6 y1x1w1v1u1 6";		// roll in, roll out (left to right)
+prog_char eff08[] PROGMEM = "AZ2az2 AZ2az2 AZ2az2 4 AZ4az2 AZ4az2 AZ4az2 4 AZ2az2 AZ2az2 AZ2az2 99";	// morse code: SOS
 
-int num = 7;
+int num = 8;
 char* Effects[] PROGMEM = {
-	eff01, eff02, eff03, eff04, eff05, eff06, eff07
+	eff01, eff02, eff03, eff04, eff05, eff06, eff07, eff08
 };
 
 // Give names to IO pins
