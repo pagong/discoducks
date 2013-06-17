@@ -50,7 +50,7 @@ char* Effects[] PROGMEM = {
 #define r5   6		// digital 6
 
 // LED state variables
-int L, R;
+byte L, R;
 
 /******************************************************************/
 
@@ -163,7 +163,12 @@ int eval_code(char code) {
 int prev = KS_Undef;
 // effect buffer
 char buffer[128];
-int pos = 0;
+
+void change_effect(int pos) {
+  L = 0; R = 0;
+  apply_state();
+  strcpy_P(buffer, (char*)pgm_read_word(&(Effects[pos])));
+}
 
 // the setup routine runs once when 'reboot':
 void setup() {                
@@ -175,14 +180,13 @@ void setup() {
   pinMode(l3, OUTPUT);	pinMode(r3, OUTPUT);
   pinMode(l4, OUTPUT);	pinMode(r4, OUTPUT);     
   pinMode(l5, OUTPUT);	pinMode(r5, OUTPUT); 
-
-  L = 0; R = 0;
-  apply_state();
-  strcpy_P(buffer, (char*)pgm_read_word(&(Effects[0])));
+  change_effect(0);
 }
 
 // the loop routine runs over and over again forever:
 void loop() {
+  static int pos = 0;
+
   // check potentiometer on analog pin A5
   check_poti(A5);
 
@@ -190,11 +194,9 @@ void loop() {
   int curr = check_keys(A4);
   if (curr != prev) {
     if (curr == KS_Red) {		// red key pressed
-      L = 0; R = 0;
-      apply_state();
       // use next effect string
       if (++pos == num) pos = 0;
-      strcpy_P(buffer, (char*)pgm_read_word(&(Effects[pos])));
+      change_effect(pos);
     }
     prev=curr;
   }
