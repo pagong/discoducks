@@ -70,11 +70,11 @@ void setup() {
   Serial.begin(9600);
 
   // initialize all required IO pins as an output.
-  pinMode(l1, OUTPUT);	pinMode(r1, OUTPUT);
-  pinMode(l2, OUTPUT);  pinMode(r2, OUTPUT);
-  pinMode(l3, OUTPUT);  pinMode(r3, OUTPUT);
-  pinMode(l4, OUTPUT);  pinMode(r4, OUTPUT);
-  pinMode(l5, OUTPUT);  pinMode(r5, OUTPUT);
+  pinMode(l1, OUTPUT);    pinMode(r1, OUTPUT);
+  pinMode(l2, OUTPUT);    pinMode(r2, OUTPUT);
+  pinMode(l3, OUTPUT);    pinMode(r3, OUTPUT);
+  pinMode(l4, OUTPUT);    pinMode(r4, OUTPUT);
+  pinMode(l5, OUTPUT);    pinMode(r5, OUTPUT);
 
   // switch all LEDs off
   L = 0;  R = 0;
@@ -112,9 +112,9 @@ void set_Effect(char *buffer, unsigned int length) {
   if (length > 127) length = 127;
   strncpy((char *)Effect, buffer, length);
   Effect[length] = 0;
+  Serial.println((char *) Effect);
   // set global Change flag
   Change = 1;
-  Serial.println((char *) Effect);
 }
 
 /****************************************/
