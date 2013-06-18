@@ -29,24 +29,23 @@
 #define r5   6		// digital 6
 
 // Effect buffer: Knight Rider
-volatile char Effect[128] = "az0 F2E2/ Df2Ce2Bd2 Yc2Xb2Wy2Vx2Uw2 3 Wu2Xv2Yw2 Bx2Cy2Db2Ec2Fd2 3";
+volatile char Effect[128] = "F2E2/ Df2Ce2Bd2 Yc2Xb2Wy2Vx2Uw2 3 Wu2Xv2Yw2 Bx2Cy2Db2Ec2Fd2 3";
 volatile char Change = 0;
 
 // LED state variables
-int L, R;
+byte L, R;
 
-/******************************************************************/
+/****************************************/
 
 #define CLIENTID  "ArduinoDiscoDucks"
-#define TOPIC1 "discoducks/"
-#define TOPIC2 "effect"
-#define TOPIC3 "speed"
+#define TOPIC1 "discoducks/effect"
+#define TOPIC2 "discoducks/speed"
 
 // Some MAC 
 byte mac [] = {'m', 's', 'd', 0x42, 0x42, 0x03} ;
 // Our IP comes from DHCP
 //byte ip[4] = { 0, 0, 0, 0 };
-//byte ip[4] = { 192, 168, 1, 77 };
+byte ip[4] = { 192, 168, 1, 77 };
 // Connect to spider.v3.msd
 byte server [4] = { 192, 168, 4, 1 };
 //byte server [4] = { 192, 168, 1, 101 };
@@ -58,8 +57,9 @@ PubSubClient arduinoClient(server, 1883, callback, ethClient) ;
 
 // Handle message from mosquitto
 void callback(char *topic, byte *payload, unsigned int length) {
-  if (topic[11] == 'e')	setEffect((char *)payload, length);
-  if (topic[11] == 's')	setSpeed( (char *)payload, length);
+  Serial.println(topic);
+  if (topic[11] == 'e')	set_Effect((char *)payload, length);
+  if (topic[11] == 's')	set_Speed( (char *)payload, length);
 }
 
 /****************************************/
@@ -70,25 +70,25 @@ void setup() {
   Serial.begin(9600);
 
   // initialize all required IO pins as an output.
-  pinMode(l1, OUTPUT);     pinMode(l2, OUTPUT);     
-  pinMode(l3, OUTPUT);     pinMode(l4, OUTPUT);     
-  pinMode(l5, OUTPUT);     L = 0;
-  pinMode(r1, OUTPUT);     pinMode(r2, OUTPUT);     
-  pinMode(r3, OUTPUT);     pinMode(r4, OUTPUT);     
-  pinMode(r5, OUTPUT);     R = 0;
+  pinMode(l1, OUTPUT);	pinMode(r1, OUTPUT);
+  pinMode(l2, OUTPUT);  pinMode(r2, OUTPUT);
+  pinMode(l3, OUTPUT);  pinMode(r3, OUTPUT);
+  pinMode(l4, OUTPUT);  pinMode(r4, OUTPUT);
+  pinMode(l5, OUTPUT);  pinMode(r5, OUTPUT);
+
+  // switch all LEDs off
+  L = 0;  R = 0;
+  apply_state();
 
   // Start Ethernet client -- get IP via DHCP
-  Ethernet.begin(mac);
-//  Ethernet.begin(mac, ip);
+//  Ethernet.begin(mac);
+  Ethernet.begin(mac, ip);
   // Connect to the MQTT server
   beginConnection() ;
 }
 
 //Initialise MQTT connection
 void beginConnection() {
-  String Topic;
-  char topic[60];
-
   int connRC = arduinoClient.connect(CLIENTID) ;
   if (!connRC) {
     Serial.println(connRC) ;
@@ -101,31 +101,20 @@ void beginConnection() {
     Serial.println(F("Connected to MQTT Server..."));
   }
 
-  Topic = String(TOPIC1) + String(TOPIC2) ;
-  Topic.toCharArray(topic, 50) ;
-  arduinoClient.subscribe(topic) ;
-
-  Topic = String(TOPIC1) + String(TOPIC3) ;
-  Topic.toCharArray(topic, 50) ;
-  arduinoClient.subscribe(topic) ;
-}
-
-int int2hex(int x) {
-  return ( (x) < 10 ? '0'+(x) : 'A'+(x)-10 );
+  arduinoClient.subscribe(TOPIC1) ;
+  arduinoClient.subscribe(TOPIC2) ;
 }
 
 /****************************************/
 
 // copy effect string from MQTT buffer to global Effect buffer
-void setEffect(char *buffer, unsigned int length) {
+void set_Effect(char *buffer, unsigned int length) {
   if (length > 127) length = 127;
   strncpy((char *)Effect, buffer, length);
-  Effect[length+1] = 0;
+  Effect[length] = 0;
   // set global Change flag
   Change = 1;
-}
-
-void setSpeed(char *buffer, unsigned int length) {
+  Serial.println((char *) Effect);
 }
 
 /****************************************/
@@ -142,19 +131,25 @@ void check_poti(int pin) {
   Serial.println(sleep);
 }
 
+void set_Speed(char *buffer, unsigned int length) {
+  String number = String(buffer);
+  int val = number.toInt();
+  Serial.println(val);
+}
+
 /****************************************/
 
 // turn the LEDs on/off (HIGH/LOW is the voltage level)
-void apply_state() {
+void apply_state(void) {
   digitalWrite(l1, (L &  1 ? HIGH : LOW));
-  digitalWrite(r1, (R &  1 ? HIGH : LOW));
   digitalWrite(l2, (L &  2 ? HIGH : LOW));
-  digitalWrite(r2, (R &  2 ? HIGH : LOW));
   digitalWrite(l3, (L &  4 ? HIGH : LOW));
-  digitalWrite(r3, (R &  4 ? HIGH : LOW));
   digitalWrite(l4, (L &  8 ? HIGH : LOW));
-  digitalWrite(r4, (R &  8 ? HIGH : LOW));
   digitalWrite(l5, (L & 16 ? HIGH : LOW));
+  digitalWrite(r1, (R &  1 ? HIGH : LOW));
+  digitalWrite(r2, (R &  2 ? HIGH : LOW));
+  digitalWrite(r3, (R &  4 ? HIGH : LOW));
+  digitalWrite(r4, (R &  8 ? HIGH : LOW));
   digitalWrite(r5, (R & 16 ? HIGH : LOW));
 }
 
@@ -235,6 +230,8 @@ int eval_code(char code) {
 		sleep N * delay value
     6)	    if special effect:
 		act accordingly
+    7)	    if MQTT has delivered a new effect string
+		terminate this effect loop
   Repeat.
  */
  
@@ -245,18 +242,23 @@ void loop(void) {
 
   int len = strlen((char *)Effect);
   for (int i=0; i<len; i++) {
+    // keep MQTT connection alive
+    arduinoClient.loop();
+
     if (eval_code(Effect[i])) {
       // true from eval_code: delete init sequence
       for (int k=0; k<=i; k++)
         Effect[k] = ' ';
     }
+
     // terminate loop if we've recvd a new effect string via MQTT
     if (Change) {
       i = len;
       Change = 0;
+      // switch all LEDs off
+      L = 0;  R = 0;
+      apply_state();
     }
   }
-
-  arduinoClient.loop();
 }
 
