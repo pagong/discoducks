@@ -23,10 +23,10 @@
   This example code is in the public domain.
  */
  
-prog_char eff01[] PROGMEM = "F2E2/ Df2Ce2Bd2 Yc2Xb2Wy2Vx2Uw2 3 Wu2Xv2Yw2 Bx2Cy2Db2Ec2Fd2 3";	// Knight Rider
+prog_char eff01[] PROGMEM = "F2E2/ Df2Ce2Bd2 Yc2Xb2Wy2Vx2Uw2 4 Wu2Xv2Yw2 Bx2Cy2Db2Ec2Fd2 4";	// Knight Rider
 prog_char eff02[] PROGMEM = "Fw2Ev2Du2Cf2Be2 Yd2Xc2Wb2Vy2Ux2";					// rotate: left to right
 prog_char eff03[] PROGMEM = "FeDcByXwVu3 fEdCbYxWvU3";						// alternate blinking
-prog_char eff04[] PROGMEM = "AZ0/ byFU2 cxBY2 dwCX2 evDW2 fuEV2";				// rotate each side
+prog_char eff04[] PROGMEM = "AZ0/ bFyU2 cBxY2 dCwX2 eDvW2 fEuV2";				// rotate each side
 prog_char eff05[] PROGMEM = "Az3 Za3";								// blink left / blink right
 prog_char eff06[] PROGMEM = "BY2CX2DW2EV2FU2 3*0*0*0*0*0*5 by2cx2dw2ev2fu2 3*0*0*0*0*0*5";	// from center to outside + blink
 prog_char eff07[] PROGMEM = "F1E1D1C1B1 6 Y1X1W1V1U1 6 f1e1d1c1b1 6 y1x1w1v1u1 6";		// roll in, roll out (left to right)
@@ -76,7 +76,7 @@ void check_poti(int pin) {
 
 // use voltage levels to determine pressed keys
 int check_keys(int pin) {
-  int level = analogRead(A4);
+  int level = analogRead(pin);
   if (abs(level-380) < 10)	return KS_Red;
   if (abs(level-510) < 10)	return KS_Both;
   if (abs(level-610) < 10)	return KS_None;

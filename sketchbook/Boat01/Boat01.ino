@@ -23,25 +23,26 @@
   This example code is in the public domain.
  */
  
-prog_char eff01[] PROGMEM = "F2E2/ Df2Ce2Bd2 Yc2Xb2Wy2Vx2Uw2 3 Wu2Xv2Yw2 Bx2Cy2Db2Ec2Fd2 3";	// Knight Rider
+prog_char eff01[] PROGMEM = "F2E2/ Df2Ce2Bd2 Yc2Xb2Wy2Vx2Uw2 4 Wu2Xv2Yw2 Bx2Cy2Db2Ec2Fd2 4";	// Knight Rider
 prog_char eff02[] PROGMEM = "Fw2Ev2Du2Cf2Be2 Yd2Xc2Wb2Vy2Ux2";					// rotate: left to right
 prog_char eff03[] PROGMEM = "FeDcByXwVu3 fEdCbYxWvU3";						// alternate blinking
-prog_char eff04[] PROGMEM = "AZ0/ byFU2 cxBY2 dwCX2 evDW2 fuEV2";				// rotate each side
+prog_char eff04[] PROGMEM = "AZ0/ bFyU2 cBxY2 dCwX2 eDvW2 fEuV2";				// rotate each side
 prog_char eff05[] PROGMEM = "Az3 Za3";								// blink left / blink right
 prog_char eff06[] PROGMEM = "BY2CX2DW2EV2FU2 3*0*0*0*0*0*5 by2cx2dw2ev2fu2 3*0*0*0*0*0*5";	// from center to outside + blink
 prog_char eff07[] PROGMEM = "F1E1D1C1B1 6 Y1X1W1V1U1 6 f1e1d1c1b1 6 y1x1w1v1u1 6";		// roll in, roll out (left to right)
 prog_char eff08[] PROGMEM = "AZ2az2 AZ2az2 AZ2az2 4 AZ4az2 AZ4az2 AZ4az2 4 AZ2az2 AZ2az2 AZ2az2 99";	// morse code: SOS
 
-prog_char eff14[] PROGMEM = "AZ0/ yxFU2 bwYX2 cvBW2 duCV2 eD2 fE2";				// rotate each side
+prog_char eff14[] PROGMEM = "AZ0/ yFx2 bYwX2 cBvW2 dCuV2 eDU2 fE2";				// rotate each side
 prog_char eff15[] PROGMEM = "AzY3 Zay3";							// blink left / blink right
 prog_char eff16[] PROGMEM = "YX2BW2CV2DU2E2F2 3*0*0*0*0*0*5 yx2bw2cv2du2e2f2 3*0*0*0*0*0*5";	// from center to outside + blink
+prog_char eff17[] PROGMEM = "F1E1D1C1B1Y1 6 X1W1V1U1 6 f1e1d1c1b1y1 6 x1w1v1u1 6";		// roll in, roll out (left to right)
 
 int num = 8;
 char* Normal[] PROGMEM = {
-	eff01, eff02, eff03, eff04, eff05, eff06, eff07, eff08
+	eff01, eff07, eff05, eff02, eff06, eff03, eff04, eff08
 };
 char* Boat[] PROGMEM = {
-	eff01, eff02, eff03, eff14, eff15, eff16, eff07, eff08
+	eff01, eff17, eff15, eff02, eff16, eff03, eff14, eff08
 };
 char** Effects;
 
