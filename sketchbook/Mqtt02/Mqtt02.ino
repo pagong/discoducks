@@ -36,8 +36,12 @@
 prog_char eff_OK[]  PROGMEM = "Az3 Za3";                                                          // blink left / blink right
 prog_char eff_SOS[] PROGMEM = "AZ2az2 AZ2az2 AZ2az2 4 AZ4az2 AZ4az2 AZ4az2 4 AZ2az2 AZ2az2 AZ2az2 9";    // morse code: SOS
 
+char* Effects[] PROGMEM = {
+        eff_OK, eff_SOS
+};
+
 // Effect buffer
-volatile char Effect[128];
+char Buffer[128];
 volatile char Change = 0;
 
 // LED state variables
@@ -74,19 +78,17 @@ void callback(char *topic, byte *payload, unsigned int length) {
 /****************************************/
 
 // copy initial effect to global Effect buffer
-void initial_effect(char *effect) {
-  strcpy_P(Effect, effect);
-
-// strcpy_P(buffer, (char*)pgm_read_word(&(Effects[pos])));
+void initial_effect(int pos) {
+  strcpy_P(Buffer, (char*)pgm_read_word(&(Effects[pos])));
 }
 
 // Called by MQTT callback function:
 //   copy effect string from MQTT buffer to global Effect buffer
 void set_Effect(char *buffer, unsigned int length) {
   if (length > 127) length = 127;
-  strncpy((char *)Effect, buffer, length);
-  Effect[length] = 0;
-  Serial.println((char *) Effect);
+  strncpy((char *)Buffer, buffer, length);
+  Buffer[length] = 0;
+  Serial.println((char *) Buffer);
   // set global Change flag
   Change = 1;
 }
@@ -103,6 +105,8 @@ void check_poti(int pin) {
   int poti = analogRead(pin);
   float value = (poti * MULT) / 1023.0;
   sleep = (1.0 + value) * UNIT;
+  // values between 50 and 550:
+  // 50 * (1 .. 1+10)
   Serial.println(sleep);
 }
 
@@ -117,20 +121,14 @@ void set_Speed(char *buffer, unsigned int length) {
 
 // send topic and value to MQTT broker
 void publish_poti() {
-  String Helper;
   char topic[30] = TOPIC4 ;
   char value[30];
 
-  Helper = String(speed) ;
-  Helper.toCharArray(value, 30) ;
-
+  sprintf(value, "%3d", sleep);
   arduinoClient.publish(topic, value) ;
 }
 
 /****************************************/
-
-// last key press
-int prev_key = KS_Undef;
 
 // key press codes
 #define KS_Undef   0
@@ -138,6 +136,9 @@ int prev_key = KS_Undef;
 #define KS_Red     2
 #define KS_Yellow  3
 #define KS_Both    4
+
+// last key press
+int prev_key = KS_Undef;
 
 // use voltage levels to determine pressed keys
 int check_keys(int pin) {
@@ -155,9 +156,7 @@ void publish_keys(int keysym) {
   char topic[30] = TOPIC3 ;
   char value[30];
 
-  Helper = String(keysym) ;
-  Helper.toCharArray(value, 30) ;
-
+  sprintf(value, "%1d", keysym);
   arduinoClient.publish(topic, value) ;
 }
 
@@ -269,11 +268,11 @@ void beginConnection() {
     Serial.println(F("Please reset the arduino to try again"));
     delay(100);
 //   exit(-1);
-    initial_effect(eff_SOS) ;
+    initial_effect(1) ;
   }
   else {
     Serial.println(F("Connected to MQTT Server..."));
-    initial_effect(eff_OK) ;
+    initial_effect(0) ;
   }
 
   arduinoClient.subscribe(TOPIC1) ;
@@ -323,15 +322,15 @@ void loop(void) {
     prev_key = curr;
   }
 
-  int len = strlen((char *)Effect);
+  int len = strlen((char *)Buffer);
   for (int i=0; i<len; i++) {
     // keep MQTT connection alive
     arduinoClient.loop();
 
-    if (eval_code(Effect[i])) {
+    if (eval_code(Buffer[i])) {
       // true from eval_code: delete init sequence
       for (int k=0; k<=i; k++)
-        Effect[k] = ' ';
+        Buffer[k] = ' ';
     }
 
     // terminate loop if we've recvd a new effect string via MQTT
