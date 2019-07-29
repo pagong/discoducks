@@ -13,7 +13,9 @@
 
  * MQTT - http://knolleary.net/arduino-client-for-mqtt/
 
-  This example code is in the public domain.
+ * My IOT demo network: 192.168.107.0/24
+ 
+   This example code is in the public domain.
  */
  
 #include <SPI.h>
@@ -33,8 +35,10 @@
 #define r5   6		// digital 6
 
 // 2 simple effects
-prog_char eff_OK[]  PROGMEM = "Az3 Za3";                                                          // blink left / blink right
-prog_char eff_SOS[] PROGMEM = "AZ2az2 AZ2az2 AZ2az2 4 AZ4az2 AZ4az2 AZ4az2 4 AZ2az2 AZ2az2 AZ2az2 9";    // morse code: SOS
+prog_char eff_OK[]  PROGMEM =		// alternate blinking:  left / right
+	            "Az3 Za3" ;                  
+prog_char eff_SOS[] PROGMEM =		// morse code: SOS
+		    "AZ2az2 AZ2az2 AZ2az2 4 AZ4az2 AZ4az2 AZ4az2 4 AZ2az2 AZ2az2 AZ2az2 9" ;    
 
 char* Effects[] PROGMEM = {
         eff_OK, eff_SOS
@@ -56,12 +60,12 @@ byte L, R;
 #define TOPIC3 "discoducks/keypress"
 #define TOPIC4 "discoducks/potivalue"
 
+// Our IP comes is fixed
+byte ip[4] = { 192, 168, 107, 93 };
+// Connect to MQTT on IOT network (HASS OS)
+byte server [4] = { 192, 168, 107, 10 };
 // Some MAC 
 byte mac [] = {'m', 's', 'd', 0x42, 0x42, 0x03} ;
-// Our IP comes from DHCP
-byte ip[4] = { 192, 168, 107, 99 };
-// Connect to MQTT on IOT network (HASS OS)
-byte server [4] = { 192, 168, 107, 1 };
 
 // Our Ethernet client
 EthernetClient ethClient;
@@ -105,8 +109,7 @@ void check_poti(int pin) {
   int poti = analogRead(pin);
   float value = (poti * MULT) / 1023.0;
   sleep = (1.0 + value) * UNIT;
-  // values between 50 and 550:
-  // 50 * (1 .. 1+10)
+  // sleep values between 50 and 550: (1 .. 1+10) * 50
   Serial.println(sleep);
 }
 
@@ -267,7 +270,6 @@ void beginConnection() {
     Serial.println(F("Could not connect to MQTT Server"));
     Serial.println(F("Please reset the arduino to try again"));
     delay(100);
-//   exit(-1);
     initial_effect(1) ;
   }
   else {
