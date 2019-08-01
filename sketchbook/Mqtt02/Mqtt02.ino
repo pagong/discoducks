@@ -60,12 +60,12 @@ byte L, R;
 #define TOPIC3 "discoducks/keypress"
 #define TOPIC4 "discoducks/potivalue"
 
-// Our IP comes is fixed
+// Our IP is fixed
 byte ip[4] = { 192, 168, 107, 93 };
 // Connect to MQTT on IOT network (HASS OS)
-byte server [4] = { 192, 168, 107, 10 };
+byte server[4] = { 192, 168, 107, 10 };
 // Some MAC 
-byte mac [] = {'m', 's', 'd', 0x42, 0x42, 0x03} ;
+byte mac[6] = {'m', 's', 'd', 0x42, 0x42, 0x03} ;
 
 // Our Ethernet client
 EthernetClient ethClient;
@@ -101,16 +101,16 @@ void set_Effect(char *buffer, unsigned int length) {
 
 #define UNIT  50      // 50 ms
 #define MULT  10      // max delay
-int sleep;
-int prev_sleep = 1;
+int Sleep;
+int pSleep = 1;
 
 // use voltage at potentiometer to determine sleep time
 void check_poti(int pin) {
   int poti = analogRead(pin);
   float value = (poti * MULT) / 1023.0;
-  sleep = (1.0 + value) * UNIT;
+  Sleep = (1.0 + value) * UNIT;
   // sleep values between 50 and 550: (1 .. 1+10) * 50
-  Serial.println(sleep);
+  Serial.println(Sleep);
 }
 
 // Called by MQTT callback function:
@@ -118,7 +118,7 @@ void check_poti(int pin) {
 void set_Speed(char *buffer, unsigned int length) {
   String number = String(buffer);
   int val = number.toInt();
-  sleep = val;
+  Sleep = val;
   Serial.println(val);
 }
 
@@ -127,7 +127,7 @@ void publish_poti() {
   char topic[30] = TOPIC4 ;
   char value[30];
 
-  sprintf(value, "%3d", sleep);
+  sprintf(value, "%3d", Sleep);
   arduinoClient.publish(topic, value) ;
 }
 
@@ -141,7 +141,7 @@ void publish_poti() {
 #define KS_Both    4
 
 // last key press
-int prev_key = KS_Undef;
+int pKey = KS_Undef;
 
 // use voltage levels to determine pressed keys
 int check_keys(int pin) {
@@ -172,6 +172,9 @@ void apply_state(void) {
   digitalWrite(l4, (L &  8 ? HIGH : LOW));      digitalWrite(r4, (R &  8 ? HIGH : LOW));
   digitalWrite(l5, (L & 16 ? HIGH : LOW));      digitalWrite(r5, (R & 16 ? HIGH : LOW));
 }
+
+// global Wait time
+int Wait = 0;
 
 int eval_code(char code) {
   int change = 0;
@@ -218,12 +221,22 @@ int eval_code(char code) {
   if (('0' <= code) && (code <= '9')) {
     // compute wait time
     wait = (code == '0' ? sleep / 2 : (code - '0') * sleep);
+    // store wait time for next usage
+    Wait = wait;
   } else
   if (code == '*') {
     // flash all LEDs (invert state)
     L ^= 31;
     R ^= 31;
     change = 1;
+  } else
+  if (code == '#') {
+    // use stored wait time
+    wait = Wait;
+  } else
+  if (code == '$') {
+    // send "end-of-effect"
+    publish_eoe();
   } else
   if (code == '/') {
     // cut init sequence
@@ -317,18 +330,18 @@ void loop(void) {
 
   // check potentiometer on analog pin A5
   check_poti(A5);
-  if (sleep != prev_sleep) {
+  if (Sleep != pSleep) {
     // publish poti state via MQTT
     publish_poti();
-    prev_sleep = sleep;
+    pSleep = Sleep;
   }
 
   // check key press on analog pin A4
   int curr = check_keys(A4);
-  if (curr != prev_key) {
+  if (curr != pKey) {
     // publish key state via MQTT
     publish_keys(curr);
-    prev_key = curr;
+    pKey = curr;
   }
 
   int len = strlen((char *)Buffer);
