@@ -155,7 +155,6 @@ int check_keys(int pin) {
 
 // send topic and value to MQTT broker
 void publish_keys(int keysym) {
-  String Helper;
   char topic[30] = TOPIC3 ;
   char value[30];
 
@@ -234,6 +233,14 @@ int eval_code(char code) {
   if (change)	apply_state();
   if (wait > 0)	delay(wait);
   return 0;
+}
+
+// send topic and value to MQTT broker
+void publish_eoe() {
+  char topic[30] = TOPIC1 ;
+  char value[30] = "end-of-effect";
+
+  arduinoClient.publish(topic, value) ;
 }
 
 /****************************************/
@@ -344,5 +351,8 @@ void loop(void) {
       apply_state();
     }
   }
+
+  // publish "end-of-effect" via MQTT	
+  publish_eoe();
 }
 
