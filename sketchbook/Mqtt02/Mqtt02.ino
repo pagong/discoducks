@@ -220,7 +220,7 @@ int eval_code(char code) {
   } else
   if (('0' <= code) && (code <= '9')) {
     // compute wait time
-    wait = (code == '0' ? sleep / 2 : (code - '0') * sleep);
+    wait = (code == '0' ? Sleep / 2 : (code - '0') * Sleep);
     // store wait time for next usage
     Wait = wait;
   } else
