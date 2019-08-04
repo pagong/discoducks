@@ -23,17 +23,17 @@
   This example code is in the public domain.
  */
  
-prog_char eff01[] PROGMEM = "az1/ B#Y#C#X#D#W#E#V#F#U# b#y#c#x#d#w#e#v#f#u#";     // roll in + roll out (right)
-prog_char eff02[] PROGMEM = "az1/ W#D#X#C#Y#B#U#F#V#E# w#d#x#c#y#b#u#f#v#e#";     // roll in + roll out (left)
-prog_char eff03[] PROGMEM = "az1/ AZ#az#";                                        // blink all ducks
-prog_char eff04[] PROGMEM = "az1/ Az#Za#";                                        // alternate blinking
-prog_char eff05[] PROGMEM = "az1/ BW#bwEX#exVC#vcFX#fxUD#ud";                     // spin right
-prog_char eff06[] PROGMEM = "az1/ WB#wbDU#duXF#xfCV#cvYE#ye";                     // spin left
-prog_char eff07[] PROGMEM = "az1/ Bf#Yu#Cb#Xy#Dc#Wx#Ed#Vw#Fe#Uv#";                // wandering sector right
-prog_char eff08[] PROGMEM = "az1/ Wv#De#Xw#Cd#Yx#Bc#Uy#Fb#Vu#Ef#";                // wandering sector left
+const char eff01[] PROGMEM = "az1/ B#Y#C#X#D#W#E#V#F#U# b#y#c#x#d#w#e#v#f#u#";     // roll in + roll out (right)
+const char eff02[] PROGMEM = "az1/ W#D#X#C#Y#B#U#F#V#E# w#d#x#c#y#b#u#f#v#e#";     // roll in + roll out (left)
+const char eff03[] PROGMEM = "az1/ AZ#az#";                                        // blink all ducks
+const char eff04[] PROGMEM = "az1/ Az#Za#";                                        // alternate blinking
+char const eff05[] PROGMEM = "az1/ BW#bwEX#exVC#vcFX#fxUD#ud";                     // spin right
+char const eff06[] PROGMEM = "az1/ WB#wbDU#duXF#xfCV#cvYE#ye";                     // spin left
+char const eff07[] PROGMEM = "az1/ Bf#Yu#Cb#Xy#Dc#Wx#Ed#Vw#Fe#Uv#";                // wandering sector right
+char const eff08[] PROGMEM = "az1/ Wv#De#Xw#Cd#Yx#Bc#Uy#Fb#Vu#Ef#";                // wandering sector left
 
 int num = 8;
-char* Effects[] PROGMEM = {
+const char* const Effects[] PROGMEM = {
 	eff01, eff02, eff03, eff04, eff05, eff06, eff07, eff08
 };
 
