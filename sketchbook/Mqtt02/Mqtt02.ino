@@ -35,12 +35,12 @@
 #define r5   6		// digital 6
 
 // 2 simple effects
-prog_char eff_OK[]  PROGMEM =		// alternate blinking:  left / right
+const char eff_OK[]  PROGMEM =		// alternate blinking:  left / right
 	            "Az3 Za3" ;                  
-prog_char eff_SOS[] PROGMEM =		// morse code: SOS
+const char eff_SOS[] PROGMEM =		// morse code: SOS
 		    "AZ2az2 AZ2az2 AZ2az2 4 AZ4az2 AZ4az2 AZ4az2 4 AZ2az2 AZ2az2 AZ2az2 9" ;    
 
-char* Effects[] PROGMEM = {
+const char* const Effects[] PROGMEM = {
         eff_OK, eff_SOS
 };
 
@@ -67,17 +67,17 @@ byte server[4] = { 192, 168, 107, 10 };
 // Some MAC 
 byte mac[6] = {'m', 's', 'd', 0x42, 0x42, 0x03} ;
 
-// Our Ethernet client
-EthernetClient ethClient;
-// Our MQTT client
-PubSubClient arduinoClient(server, 1883, callback, ethClient) ;
-
 // Handle message from mosquitto
 void callback(char *topic, byte *payload, unsigned int length) {
   Serial.println(topic);
   if (topic[11] == 'e')	set_Effect((char *)payload, length);
   if (topic[11] == 's')	set_Speed( (char *)payload, length);
 }
+
+// Our Ethernet client
+EthernetClient ethClient;
+// Our MQTT client
+PubSubClient arduinoClient(server, 1883, callback, ethClient) ;
 
 /****************************************/
 
@@ -368,4 +368,3 @@ void loop(void) {
   // publish "end-of-effect" via MQTT	
   publish_eoe();
 }
-
