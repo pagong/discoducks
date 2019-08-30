@@ -1,5 +1,5 @@
 /*
-  Blinkin' Rubber Duckies
+  Blinkin' Rubber Duckies (190830a)
 
   Uses UNO + Ethernet + Proto shield:
 
@@ -7,15 +7,16 @@
    + 'effect' Use tiny interpreter for effect strings.
    + 'speed'  Use tiny interpreter for effect strings.
 
- * Publish two topics to MQTT broker mosquitto
+ * Publish three topics to MQTT broker mosquitto
    + 'keypress'  Key press symbols
    + 'potivalue' Potentiometer value (for sleep time)
+   + 'status'    "End-of-Effect" signal to external controllers
 
  * MQTT - http://knolleary.net/arduino-client-for-mqtt/
 
  * My IOT demo network: 192.168.107.0/24
  
-   This example code is in the public domain.
+  This example code is in the public domain.
  */
  
 #include <SPI.h>
@@ -36,7 +37,7 @@
 
 // 2 simple effects
 const char eff_OK[]  PROGMEM =		// alternate blinking:  left / right
-	            "Az3 Za3" ;                  
+	      "Az3 Za3" ;                  
 const char eff_SOS[] PROGMEM =		// morse code: SOS
 		    "AZ2az2 AZ2az2 AZ2az2 4 AZ4az2 AZ4az2 AZ4az2 4 AZ2az2 AZ2az2 AZ2az2 9" ;    
 
@@ -54,11 +55,12 @@ byte L, R;
 /****************************************/
 
 // values for MQTT client
-#define CLIENTID  "ArduinoDiscoDucks"
+#define CLIENTID "ArduinoDiscoDucks"
 #define TOPIC1 "discoducks/effect"
 #define TOPIC2 "discoducks/speed"
 #define TOPIC3 "discoducks/keypress"
 #define TOPIC4 "discoducks/potivalue"
+#define TOPIC5 "discoducks/status"
 
 // Our IP is fixed
 byte ip[4] = { 192, 168, 107, 93 };
@@ -89,6 +91,7 @@ void initial_effect(int pos) {
 // Called by MQTT callback function:
 //   copy effect string from MQTT buffer to global Effect buffer
 void set_Effect(char *buffer, unsigned int length) {
+  if (length == 0) strcpy(buffer, " 9");
   if (length > 127) length = 127;
   strncpy((char *)Buffer, buffer, length);
   Buffer[length] = 0;
@@ -250,8 +253,8 @@ int eval_code(char code) {
 
 // send topic and value to MQTT broker
 void publish_eoe() {
-  char topic[30] = TOPIC1 ;
-  char value[30] = "end-of-effect";
+  char topic[30] = TOPIC5 ;
+  char value[30] = "EoE";
 
   arduinoClient.publish(topic, value) ;
 }
@@ -274,9 +277,11 @@ void setup() {
   L = 0;  R = 0;
   apply_state();
 
-  // Start Ethernet client -- use fixed IP
+  // Start Ethernet client -- use static IP
   Ethernet.begin(mac, ip);
-
+  delay(765);
+  // Ethernet.begin(mac);  // get IP via DHCP
+  
   // Connect to the MQTT server
   Serial.println("start MQTT") ;
   beginConnection() ;
@@ -355,7 +360,7 @@ void loop(void) {
         Buffer[k] = ' ';
     }
 
-    // terminate loop if we've recvd a new effect string via MQTT
+    // terminate for loop if we've recvd a new effect string via MQTT
     if (Change) {
       i = len;
       Change = 0;
