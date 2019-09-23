@@ -39,8 +39,14 @@ to get a quick impression of the blinking ducks in action.
 
 ### MFH19
 
-  "Disco-Ducks-Roulette" at the MakerFaire Hannover 2019:
-  * [video](https://drive.google.com/file/d/1-CSCXpq4Vx5WX7pSvrVt4ZidkViK5EeQ/view?usp=sharing)
+  At MakerFaire Hannover 2019 I#ve presented the ["Disco-Ducks-Roulette"](https://drive.google.com/file/d/1-CSCXpq4Vx5WX7pSvrVt4ZidkViK5EeQ/view?usp=sharing)
+  
+  | Gallery |  |
+  |---------|--|
+  | ![pic1](https://github.com/pagong/discoducks/blob/master/media/ddr-001.jpg) | ![pic2](https://github.com/pagong/discoducks/blob/master/media/ddr-002.jpg) |
+  | ![pic3](https://github.com/pagong/discoducks/blob/master/media/ddr-003.jpg) | ![pic4](https://github.com/pagong/discoducks/blob/master/media/ddr-004.jpg) |
+  
+  
   * ![pic1](https://github.com/pagong/discoducks/blob/master/media/ddr-001.jpg)
   * ![pic2](https://github.com/pagong/discoducks/blob/master/media/ddr-002.jpg)
   * ![pic3](https://github.com/pagong/discoducks/blob/master/media/ddr-003.jpg)
